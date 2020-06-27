@@ -1,0 +1,65 @@
+PROMEDIO DE MUERTES POR H1N1
+[{$match: {
+  "Deaths": {
+    $gte: 0
+  },
+  "Country": {
+    $ne: "The Grand Total"
+  }
+}}, {$addFields: {
+  date: {
+    $dateFromString: {
+      dateString: "$Update Time"
+    }
+  }
+}}, {$sort: {
+  date: -1
+}}, {$group: {
+  _id: {pais:"$Country",
+  fecha:"$date",
+  muertes:"$Deaths", 
+  repite: {$sum:1},
+  }
+}}, {$group: {
+  _id: null,
+  paises: {
+    $sum: 1
+  },
+  total: {
+    $sum: "$Deaths"
+  }
+}}, {$addFields: {
+  promedio_muertes: {
+    $divide: ["$total","$paises"]
+  }
+}}]
+
+AGRUPAR PELICULAS POR GENERO
+[{$unwind: {
+  path: "$genres",
+  includeArrayIndex: 'includeArrayIndex',
+  preserveNullAndEmptyArrays: false
+}}, {$unwind: {
+  path: "$countries",
+  includeArrayIndex: 'Index',
+  preserveNullAndEmptyArrays: false
+}}, {$group: {
+  _id: "$countries",
+  total: {
+    $push:{
+      genero: "$genres",
+      titulo: "$title"
+    }
+  }
+}}, {$unwind: {
+  path: "$total",
+  includeArrayIndex: 'i',
+  preserveNullAndEmptyArrays: false
+}}, {$addFields: {
+  genero: "$total.genero"
+}}, {$group: {
+  _id: {pais:"$_id",genero:"$genero"},
+  suma: {
+    $sum: 1
+  }
+}}]
